@@ -35,7 +35,8 @@ export class PostRepository implements IPostRepository {
 
     async findAllPost(page:number): Promise<{ success: boolean, message: string, data?: IPost[] }> {
         try {
-            const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page*5);
+            // const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page*5);
+            const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 })
             if (!posts) {
                 return { success: false, message: "no posts found" };
             }
@@ -56,6 +57,23 @@ export class PostRepository implements IPostRepository {
                 return { success: false, message: "No posts found" };
             }
             return { success: true, message: "Posts found", data: posts };
+        } catch (error) {
+            const err = error as Error;
+            console.log("Error fetching users post", err);
+            throw new Error(`Error fetching users post: ${err.message}`);
+        }
+    }
+
+    async findPost(id: String): Promise<{ success: boolean, message: string, data?:any }> {
+        try {
+            console.log(id," id from front api gate way")
+            const post = await Post.findById(id);
+            // const post = await Post.find({ _id: id });
+            console.log(post, '----post data for a sinle post');
+            if (!post) {
+                return { success: false, message: "No posts found" };
+            }
+            return { success: true, message: "Posts found", data: post };
         } catch (error) {
             const err = error as Error;
             console.log("Error fetching users post", err);

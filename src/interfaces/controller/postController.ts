@@ -31,24 +31,21 @@ class PostController {
         }
     }
 
-    async fetchUserPosts(id: string) {
+    async fetchPdfUrl(data:any){
         try {
-            console.log('id--------------------', id, '=========================')
-            const result = await this.postService.fetchUserPosts(id)
+            console.log(data,'-------------------------hello')
+            const result = await this.postService.getPdfUrl(data)
+            console.log(result, '-----------------------return in post controller');
             return result;
         } catch (error) {
 
         }
     }
 
-    async getNewPosts() {
-        try {
-            const result = await this.postService.getNewPosts();
-            return result;
-        } catch (error) {
+   
+   
 
-        }
-    }
+    
 }
 
 export const postController = new PostController();

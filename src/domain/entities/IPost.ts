@@ -41,7 +41,9 @@ export interface IAddPostData {
         buffer: Buffer;
         originalname?: string;
     }[];
-    pdf?:{buffer:Buffer};
+    pdf?:{buffer:Buffer;
+        originalname?: string;
+    }[];
 
 }
 
