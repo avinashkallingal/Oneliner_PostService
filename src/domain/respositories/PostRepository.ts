@@ -17,7 +17,7 @@ export class PostRepository implements IPostRepository {
                 pdfUrl:post.pdfUrl,
                 // originalname: post.originalname,
             });
-            console.log('0000');
+            console.log('0000abc');
             const savedPost = await newPost.save();
             console.log(savedPost);
             console.log('0000000000')
@@ -26,6 +26,78 @@ export class PostRepository implements IPostRepository {
             }
             console.log('000000000000================')
             return { success: true, message: "Data saved successfullt", data: savedPost };
+        } catch (error) {
+            const err = error as Error;
+            console.log('Error saving posts', err);
+            return { success: false, message: err.message }
+        }
+    }
+
+
+    async update(post: any): Promise<{ success: boolean; message: string; data?: any }> {
+        try {
+            console.log('00');
+            console.log(post, '-------------------------------description of the post data++++++----------')
+            // const newPost = new Post({
+            //     userId: post.userId,
+            //     genre:post.genre,
+            //     summary: post.summary,
+            //     title: post.title,
+            //     imageUrl: post.imageUrl,
+            //     pdfUrl:post.pdfUrl,
+            //     // originalname: post.originalname,
+            // });
+            // console.log('0000');
+            // const savedPost = await newPost.save();
+            // console.log(savedPost);
+            // console.log('0000000000')
+            // if (!savedPost) {
+            //     return { success: false, message: "Can't save data" };
+            // }
+            // console.log('000000000000================')
+            // return { success: true, message: "Data saved successfullt", data: savedPost };
+
+
+
+            const updateFields:any = {};
+            if (post.title !== undefined && post.title.length !== 0) {
+              updateFields.title = post.title;
+            }
+            if (post.genre !== undefined && post.genre.length !== 0) {
+              updateFields.genre = post.genre;
+            }
+            if (post.imageUrl !== undefined && post.imageUrl !== null && post.imageUrl !== '') {
+              updateFields.imageUrl = post.imageUrl;
+            }
+            if (post.pdfUrl !== undefined && post.pdfUrl !== null && post.pdfUrl !== '' && post.pdfUrl.length !== null ) {
+                updateFields.pdfUrl = post.pdfUrl;
+              }
+            if (post.summary !== undefined && post.summary.length !== 0) {
+                updateFields.summary = post.summary;
+              }
+              if (post.tags !== undefined && post.tags !== null) {
+                updateFields.tags = post.tags;
+              }
+           
+              console.log(post.postId," post id +++++++++++++++++++++")
+            const postExist = await Post.updateOne(
+                { _id: post.postId },
+                { $set: updateFields }
+            );
+            console.log(updateFields,"updated fields from react body")
+
+            if (postExist.modifiedCount > 0) {
+                const updatedPost = await Post.findById(post.postId);
+                return {success:true,message:"postUpdated"};
+            } else {
+                console.log('No changes were made to the document.');
+                return {success:false,message:"no change updated"};
+            }
+
+
+
+
+
         } catch (error) {
             const err = error as Error;
             console.log('Error saving posts', err);
@@ -86,6 +158,45 @@ export class PostRepository implements IPostRepository {
             const posts = await Post.find().sort({ _id: -1 }).limit(5);
             const count = await Post.find({}).countDocuments();
             return { posts, count }
+        } catch (error) {
+            const err = error as Error;
+            console.log("Error fetching users post", err);
+            throw new Error(`Error fetching users post: ${err.message}`);
+        }
+    }
+
+    async likePost(data:any){
+        try{
+             // Convert postId to ObjectId if necessary
+        const userId = new mongoose.Types.ObjectId(data.userId);
+        console.log(data," data in post repo")
+            const post=await Post.findById(data.postId)
+            console.log(post," post details in like function")
+            console.log(data.likeFlag," this is like flag")
+            if(data.likeFlag){
+                await Post.findByIdAndUpdate(data.postId,{$push:{likes:{ userId: data.userId }}})
+                console.log("liked by user")
+                return {success:true,message:"liked by user",like:true}
+              
+            }else{
+                await Post.findByIdAndUpdate(data.postId,{$pull:{likes:{userId:data.userId}}}) 
+                console.log("unliked by user")
+                return {success:true,message:"unliked by user",like:false}
+            }
+                }
+        catch (error) {
+            const err = error as Error;
+            console.log("Error liking post", err);
+            throw new Error(`Error fetching like post: ${err.message}`);
+        }
+
+    }
+
+    async deletePost(post:any) {
+        try {
+            console.log(post," postId in repo++++++++++")
+            const posts = await Post.deleteOne({_id:post.postId })
+            return {success:true,message:"deleted"}
         } catch (error) {
             const err = error as Error;
             console.log("Error fetching users post", err);

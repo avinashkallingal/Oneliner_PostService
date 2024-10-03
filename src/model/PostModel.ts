@@ -37,7 +37,7 @@ const postSchema: Schema = new Schema({
    
     likes: [
         {
-            UserId: {
+            userId: {
                 type: String,
                 required: true,
             },

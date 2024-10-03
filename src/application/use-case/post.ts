@@ -79,6 +79,73 @@ class PostService {
     }
   }
 
+  async editPost(
+    post: any
+  ): Promise<{ success: boolean; message: string; data?: IPost }> {
+    try {
+      console.log("data recived in the use-case post applciaotn");
+      let imageUrls: string[] = [];
+      let pdfUrl: string[] = [];
+      let originalNames: string[] = [];
+      console.log("1");
+      if (post.images && post.images.length > 0) {
+        imageUrls = await Promise.all(
+          post.images.map(async (image:any) => {
+            console.log(image.originalname, " image urls inside s3 function");
+            const buffer = Buffer.isBuffer(image.buffer)
+              ? image.buffer
+              : Buffer.from(image.buffer);
+            console.log(buffer, " showing image buffer++++++++++++++++");
+            const imageUrl = await uploadFileToS3(buffer, image.originalname);
+
+            return imageUrl;
+          })
+        );
+
+        // originalNames = post.images.map((image) => image.originalname);
+      }
+      if (post.pdf) {
+        pdfUrl = await Promise.all(
+          post.pdf.map(async (pdf: any) => {
+            const buffer = Buffer.isBuffer(pdf.buffer)
+              ? pdf.buffer
+              : Buffer.from(pdf.buffer);
+            const fileName = "example.pdf";
+            const pdfUrl1 = await uploadFileToS3(buffer, pdf.originalname);
+            return pdfUrl1;
+          })
+        );
+      }
+
+      console.log("2");
+
+      const newPost = {
+        postId:post.postId,
+        userId: post.userId,
+        summary: post.summary,
+        title: post.title,
+        imageUrl: imageUrls,
+        pdfUrl: pdfUrl[0],
+        originalName: originalNames,
+        genre: post.genre,
+      };
+      console.log("3++++++updatepost");
+
+      console.log(imageUrls, "this is image url path");
+      const result = await this.postRepo.update(newPost);
+      console.log("4");
+      console.log(result);
+      if (!result.success) {
+        return { success: false, message: "Data not saved, error occurred" };
+      }
+
+      return { success: true, message: "post successfully updated" };
+    } catch (error) {
+      const err = error as Error;
+      return { success: false, message: err.message };
+    }
+  }
+
   async getAllPosts(
     page: number
   ): Promise<{ success: boolean; message: string; data?: IPost[] }> {
@@ -142,6 +209,36 @@ class PostService {
         }`
       );
     }
+  }
+
+  async likePost(
+    data: any
+  ): Promise<{ success: boolean; message: string;like?:boolean }> {
+
+    const result:any=await this.postRepo.likePost(data);
+    if (!result.success) {
+      return { success: false, message: "No data found" };
+    }
+    if(result.like){
+      return {success:true,message:"liked",like:true}
+    }else{
+      return {success:true,message:"unliked",like:false}
+    }
+    
+  }
+
+  async deletePost(
+    data: any
+  ): Promise<{ success: boolean; message: string;like?:boolean }> {
+
+    const result:any=await this.postRepo.deletePost(data);
+    if (!result.success) {
+      return { success: false, message: "No data found" };
+    }
+    
+      return {success:true,message:"deleted",like:true}
+   
+    
   }
 }
 

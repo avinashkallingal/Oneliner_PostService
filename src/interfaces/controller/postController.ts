@@ -12,7 +12,20 @@ class PostController {
 
     async addpost(data: IAddPostData) {
         try {
+            console.log("this is save post++++++++++")
             const result = await this.postService.addPost(data);
+            return result;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async editPost(data: IAddPostData) {
+        try {
+
+            console.log("this is edit post++++++++++")
+            const result = await this.postService.editPost(data);
             return result;
         } catch (error) {
             console.log(error);
@@ -41,6 +54,29 @@ class PostController {
 
         }
     }
+
+    async likePost(data:any){
+        try {
+            console.log(data,'-------------------------hello')
+            const result = await this.postService.likePost(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    async deletePost(data:any){
+        try {
+            console.log(data,'-------------------------hello')
+            const result = await this.postService.deletePost(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+    
 
    
    
