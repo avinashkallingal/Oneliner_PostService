@@ -33,10 +33,22 @@ class PostController {
         }
     }
 
-    async fetchedAllPosts(page:number) {
+    async fetchedAllPosts(data:any) {
         try {
-            console.log(page,'-------------------------hello')
-            const result = await this.postService.getAllPosts(page)
+            console.log(data,'-------------------------hello')
+            const result = await this.postService.getAllPosts(data)
+        
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    
+    async fetchedUserPosts(user:any) {
+        try {
+            console.log(user.userId,'-------------------------hello')
+            const result = await this.postService.getUserPosts(user)
             console.log(result, '-----------------------return in post controller');
             return result;
         } catch (error) {
@@ -48,6 +60,17 @@ class PostController {
         try {
             console.log(data,'-------------------------hello')
             const result = await this.postService.getPdfUrl(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    async fetchImageUrl(data:any){
+        try {
+            console.log(data,'-------------------------hello')
+            const result = await this.postService.getImageUrl(data)
             console.log(result, '-----------------------return in post controller');
             return result;
         } catch (error) {
@@ -70,6 +93,53 @@ class PostController {
         try {
             console.log(data,'-------------------------hello')
             const result = await this.postService.deletePost(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    
+    async addComment(data:any){
+        try {
+            console.log(data,'-------------------------in addcomment function ')
+            const result = await this.postService.addComment(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    async reportPost(data:any){
+        try {
+            console.log(data,'-------------------------report post function ')
+            const result = await this.postService.reportPost(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+
+    async adminRemovePost(data:any){
+        try {
+            console.log(data,'-------------------------admin remove post function ')
+            const result = await this.postService.adminRemovePost(data)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
+    
+    async getPostDataForAdmin(data:any){
+        try {
+            console.log(data,'-------------------------rport post function ')
+            const result = await this.postService.getPostDataForAdmin(data)
             console.log(result, '-----------------------return in post controller');
             return result;
         } catch (error) {

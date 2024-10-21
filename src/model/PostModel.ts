@@ -3,6 +3,60 @@ import { IPost } from "../domain/entities/IPost";
 
 export interface IPostDocument extends IPost, Document { }
 
+
+const replySchema: Schema = new Schema({
+    _id: { type: Schema.Types.ObjectId, auto: true },
+    UserId: {
+        type: String,
+        required: true,
+    },
+    content: {
+        type: String,
+        required: true,
+    },
+    avatar: {
+        type: String,
+    },
+    userName: {
+        type: String
+    },
+    isEdited: {
+        type: Boolean,
+        default: false
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+const commentSchema: Schema = new Schema({
+    _id: { type: Schema.Types.ObjectId, auto: true },
+    UserId: {
+        type: String,
+        required: true,
+    },
+    content: {
+        type: String,
+        required: true,
+    },
+    avatar: {
+        type: String,
+    },
+    userName: {
+        type: String
+    },
+    isEdited: {
+        type: Boolean,
+        default: false
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    replies: [replySchema],
+});
+
 const postSchema: Schema = new Schema({
     userId: {
         type: String,
@@ -52,27 +106,7 @@ const postSchema: Schema = new Schema({
             },
         },
     ],
-    comments: [
-        {
-            _id: { type: Schema.Types.ObjectId, auto: true },
-            UserId: {
-                type: String,
-                required: true,
-            },
-            content: {
-                type: String,
-                required: true,
-            },
-            isEdited: {
-                type: Boolean,
-                default: false
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now,
-            },
-        },
-    ],
+    comments: [commentSchema],
     reportPost: [
         {
             UserId: {

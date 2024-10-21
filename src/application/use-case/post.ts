@@ -2,6 +2,7 @@ import { IAddPostData, IPost } from "../../domain/entities/IPost";
 import {
   uploadFileToS3,
   fetchFileFromS3,
+  deleteFileFromS3,
 } from "../../infrastructure/s3/s3Actions";
 import { PostRepository } from "../../domain/respositories/PostRepository";
 import { Document } from "mongoose";
@@ -147,10 +148,10 @@ class PostService {
   }
 
   async getAllPosts(
-    page: number
+    data: any
   ): Promise<{ success: boolean; message: string; data?: IPost[] }> {
     try {
-      const result = await this.postRepo.findAllPost(page);
+      const result = await this.postRepo.findAllPost(data);
       if (!result.success || !result.data) {
         return { success: false, message: "No data found" };
       }
@@ -167,7 +168,7 @@ class PostService {
             const plainPost = (post as Document).toObject();
             return {
               ...plainPost,
-              imageUrl: imageUrls,
+              imageUrlS3: imageUrls,
             };
           }
           return post;
@@ -188,6 +189,39 @@ class PostService {
     }
   }
 
+
+  async getUserPosts(
+    user: any
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    const result = await this.postRepo.findUserPost(user);
+    if (!result.success || !result.data) {
+      return { success: false, message: "No data found" };
+    }
+    const postsWithImages = await Promise.all(
+      result.data?.map(async (post:any) => {
+        if (post.imageUrl && post.imageUrl.length > 0) {
+          const imageUrls = await Promise.all(
+            post.imageUrl.map(async (imageKey:any) => {
+              const s3Url = await fetchFileFromS3(imageKey, 604800);
+              return s3Url;
+            })
+          );
+          const plainPost = (post as Document).toObject();
+          return {
+            ...plainPost,
+            imageUrlS3: imageUrls,
+          };
+        }
+        return post;
+      })
+    );
+    return {
+      success: true,
+      message: "Images and user datas sent",
+      data: postsWithImages,
+    };
+  }
+
   async getPdfUrl(
     data: any
   ): Promise<{ success: boolean; message: string; data?: any }> {
@@ -201,6 +235,29 @@ class PostService {
         s3Url = await fetchFileFromS3(result.data.pdfUrl, 604800);
       }
       return { success: true, message: "pdf url got", data: s3Url };
+    } catch (error) {
+      console.error("Error in user Posts:", error);
+      throw new Error(
+        `Error fetching pdf url: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  }
+
+  async getImageUrl(
+    data: any
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    try {
+      const result:any = await this.postRepo.findPost(data.postId);
+      let s3Url = "";
+      if (!result.success || !result.data) {
+        return { success: false, message: "No data found" };
+      }
+      if (result.data.imageUrl && result.data.imageUrl.length > 0) {
+        s3Url = await fetchFileFromS3(result.data.imageUrl, 604800);
+      }
+      return { success: true, message: "image url got", data: s3Url };
     } catch (error) {
       console.error("Error in user Posts:", error);
       throw new Error(
@@ -230,6 +287,12 @@ class PostService {
   async deletePost(
     data: any
   ): Promise<{ success: boolean; message: string;like?:boolean }> {
+    console.log(data.imageKey[0]," image key")
+    const responseImage=deleteFileFromS3(data.imageKey[0])
+    const responsePdf=deleteFileFromS3(data.pdfKey)
+
+    console.log(responseImage," delete response in post usecase")
+    console.log(responsePdf," delete response in post usecase")
 
     const result:any=await this.postRepo.deletePost(data);
     if (!result.success) {
@@ -240,6 +303,67 @@ class PostService {
    
     
   }
+  async addComment(data: any) {
+    try {
+
+        console.log(data, '---------data in the post service ')
+        const comment = await this.postRepo.addComment(data);
+        if (!comment) {
+            return { success: false, message: 'unable to comment the post' }
+        }
+        return { success: true, message: 'commented the post' }
+    } catch (error) {
+        console.log('Error in likePost in applicaiton user service', error);
+        return { success: false, message: 'Someting went wrong' }
+    }
+}
+
+async reportPost(data: any) {
+  try {
+
+      console.log(data, '---------data in the post service ')
+      const report = await this.postRepo.reportPost(data);
+      if (!report) {
+          return { success: false, message: 'unable to comment the post' }
+      }
+      return { success: true, message: 'post reported' }
+  } catch (error) {
+      console.log('Error in likePost in applicaiton user service', error);
+      return { success: false, message: 'Someting went wrong' }
+  }
+}
+
+async adminRemovePost(data: any) {
+  try {
+
+      console.log(data, '---------data in the post service ')
+      const report = await this.postRepo.adminRemovePost(data);
+      if (!report) {
+          return { success: false, message: 'unable to comment the post' }
+      }
+      return { success: true, message: 'post reported' }
+  } catch (error) {
+      console.log('Error in likePost in applicaiton user service', error);
+      return { success: false, message: 'Someting went wrong' }
+  }
+}
+
+
+async getPostDataForAdmin(data: any) {
+  try {
+      console.log(data, '---------data in the post service ')
+      const report = await this.postRepo.getPostDataForAdmin(data);
+      const postData=report.data
+      if (!report) {
+          return { success: false, message: 'unable to comment the post' }
+      }
+      return { success: true, message: 'post reported', data: postData, }
+  } catch (error) {
+      console.log('Error in likePost in applicaiton user service', error);
+      return { success: false, message: 'Someting went wrong' }
+  }
+}
+  
 }
 
 export { PostService };
