@@ -25,6 +25,10 @@ export default class MessageHandler {
         console.log("Post Service - operation", operation);
         response = await postController.fetchedUserPosts(data);
         break;
+        case "get-post":
+        console.log("Post Service - operation", operation);
+        response = await postController.getPost(data);
+        break;
       case "get-pdf-url":
         console.log("Post Service - operation", operation);
         response = await postController.fetchPdfUrl(data);
@@ -54,7 +58,8 @@ export default class MessageHandler {
       case "report-post":
         console.log("Post Service - operation", operation);
         response = await postController.reportPost(data);
-        break;
+        break;       
+        
 
       case "get-posts-data-for-admin":
         console.log("Post Service - operation", operation);

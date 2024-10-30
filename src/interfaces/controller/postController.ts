@@ -56,6 +56,18 @@ class PostController {
         }
     }
 
+    
+    async getPost(post:any) {
+        try {
+            console.log(post.postId,'-------------------------hello')
+            const result = await this.postService.getPost(post)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
     async fetchPdfUrl(data:any){
         try {
             console.log(data,'-------------------------hello')

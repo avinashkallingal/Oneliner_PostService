@@ -222,6 +222,39 @@ class PostService {
     };
   }
 
+  
+  async getPost(
+    post: any
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    const result = await this.postRepo.getPost(post);
+    if (!result.success || !result.data) {
+      return { success: false, message: "No data found" };
+    }
+    const postsWithImages = await Promise.all(
+      result.data?.map(async (post:any) => {
+        if (post.imageUrl && post.imageUrl.length > 0) {
+          const imageUrls = await Promise.all(
+            post.imageUrl.map(async (imageKey:any) => {
+              const s3Url = await fetchFileFromS3(imageKey, 604800);
+              return s3Url;
+            })
+          );
+          const plainPost = (post as Document).toObject();
+          return {
+            ...plainPost,
+            imageUrlS3: imageUrls,
+          };
+        }
+        return post;
+      })
+    );
+    return {
+      success: true,
+      message: "Images and user datas sent",
+      data: postsWithImages,
+    };
+  }
+
   async getPdfUrl(
     data: any
   ): Promise<{ success: boolean; message: string; data?: any }> {

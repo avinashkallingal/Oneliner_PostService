@@ -172,6 +172,28 @@ export class PostRepository implements IPostRepository {
     }
   }
 
+  
+  async getPost(
+    post: any
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    try {
+      console.log(post.postId, "view post in repo++++++++++++++++++++");
+
+      const posts: any = await Post.find({
+        _id: post.postId.toString(),
+      }).sort({ created_at: -1 });
+      console.log(posts, "----post data");
+      if (!posts || posts.length === 0) {
+        return { success: false, message: "No posts found" };
+      }
+      return { success: true, message: "Posts found", data: posts };
+    } catch (error) {
+      const err = error as Error;
+      console.log("Error fetching users post", err);
+      throw new Error(`Error fetching users post: ${err.message}`);
+    }
+  }
+
   async findPost(
     id: String
   ): Promise<{ success: boolean; message: string; data?: any }> {
