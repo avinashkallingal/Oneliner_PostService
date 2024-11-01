@@ -318,33 +318,27 @@ export class PostRepository implements IPostRepository {
     }
   }
 
-  async addComment(data: {
-    content: string;
-    postId: string;
-    userId: string;
-    avatar: string;
-    userName: string;
-    parentCommentId?: string;
-    replayText?: string;
-  }) {
+  async addComment(data:any) {
     try {
+      console.log(data,"111111111")
       // Basic validation
-      if (!data.postId || !data.userId) {
+      if (!data.data.postId || !data.data.userId) {
         return false;
       }
 
-      if (data.parentCommentId) {
+      if (data.data.parentCommentId) {
+        console.log("222222222")
         // Handle replying to an existing comment
         const post = await Post.updateOne(
-          { _id: data.postId, "comments._id": data.parentCommentId },
+          { _id: data.data.postId, "comments._id": data.data.parentCommentId },
           {
             $addToSet: {
               "comments.$.replies": {
                 // Accessing the 'replies' field of the specific comment
-                UserId: data.userId,
-                content: data.replayText,
-                userName: data.userName,
-                avatar: data.avatar,
+                UserId: data.data.userId,
+                content: data.data.replayText,
+                userName: data.data.userName,
+                avatar: data.data.avatar,
               },
             },
           }
@@ -352,21 +346,23 @@ export class PostRepository implements IPostRepository {
         console.log(post);
         return post;
       } else {
+        console.log("33333333")
+        console.log(data.data.postId," post id")
         // Handle adding a new comment
         const post = await Post.updateOne(
-          { _id: data.postId },
+          { _id: data.data.postId },
           {
             $addToSet: {
               comments: {
-                UserId: data.userId,
-                content: data.content,
-                userName: data.userName,
-                avatar: data.avatar,
+                UserId: data.data.userId,
+                content: data.data.content,
+                userName: data.data.userName,
+                avatar: data.data.avatar,
               },
             },
           }
         );
-        console.log(post);
+        console.log(post," updated result");
         return post;
       }
     } catch (error) {
