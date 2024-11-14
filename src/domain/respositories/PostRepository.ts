@@ -177,7 +177,7 @@ export class PostRepository implements IPostRepository {
     post: any
   ): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-      console.log(post.postId, "view post in repo++++++++++++++++++++");
+      console.log(post, "view post in repo++++++++++++++++++++");
 
       const posts: any = await Post.find({
         _id: post.postId.toString(),
