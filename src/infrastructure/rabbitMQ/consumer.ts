@@ -16,6 +16,7 @@ export default class Consumer {
                 const operation = message.properties.headers?.function;
 
                 if (message.content) {
+                    console.log(message.content,"buffer data")
                     const data = JSON.parse(message.content.toString());
                     console.log(data,'---------------------')
                     await MessageHandler.handle(operation, data, correlationId, replyTo);
