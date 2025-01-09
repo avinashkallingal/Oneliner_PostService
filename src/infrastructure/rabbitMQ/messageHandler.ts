@@ -25,7 +25,7 @@ export default class MessageHandler {
         console.log("Post Service - operation", operation);
         response = await postController.fetchedUserPosts(data);
         break;
-        case "get-post":
+      case "get-post":
         console.log("Post Service - operation", operation);
         response = await postController.getPost(data);
         break;
@@ -36,6 +36,10 @@ export default class MessageHandler {
       case "get-image-url":
         console.log("Post Service - operation", operation);
         response = await postController.fetchImageUrl(data);
+        break;
+      case "fetch-like-list":
+        console.log("Post Service - operation fetch+++++++++", operation);
+        response = await postController.fetchLikeList(data);
         break;
       case "like-post":
         console.log("Post Service - operation", operation);
@@ -58,8 +62,7 @@ export default class MessageHandler {
       case "report-post":
         console.log("Post Service - operation", operation);
         response = await postController.reportPost(data);
-        break;       
-        
+        break;
 
       case "get-posts-data-for-admin":
         console.log("Post Service - operation", operation);

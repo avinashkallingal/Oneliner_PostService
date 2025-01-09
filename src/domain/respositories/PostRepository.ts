@@ -253,6 +253,27 @@ export class PostRepository implements IPostRepository {
     }
   }
 
+
+  async fetchLikeList(data: any) {
+    try {
+      // Convert postId to ObjectId if necessary
+      const userId = new mongoose.Types.ObjectId(data.userId);
+      console.log(data, " data in post repo");
+      const post = await Post.findById(data);
+      console.log(post, " post details in like function");
+     if(post){
+      return { success: true, message: "like list found", like_data:post };
+     }else{
+      return { success: false, message: "no data found", like: false };
+     }
+      
+    } catch (error) {
+      const err = error as Error;
+      console.log("Error liking post", err);
+      throw new Error(`Error fetching like post: ${err.message}`);
+    }
+  }
+
   async deletePost(post: any) {
     try {
       console.log(post, " postId in repo++++++++++");

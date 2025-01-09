@@ -317,6 +317,20 @@ class PostService {
     
   }
 
+
+  async fetchLikeList(
+    data: any
+  ): Promise<{ success: boolean; message: string;like_data?:IPost }> {
+
+    const result:any=await this.postRepo.fetchLikeList(data);
+    if (!result.success) {
+      return { success: false, message: "No data found" };
+    }
+   
+      return {success:true,message:"like data got",like_data:result.like_data}
+        
+  }
+
   async deletePost(
     data: any
   ): Promise<{ success: boolean; message: string;like?:boolean }> {

@@ -101,6 +101,17 @@ class PostController {
         }
     }
 
+    async fetchLikeList(data:any){
+        try {
+            console.log(data,'-------------------------fetch like list function call')
+            const result = await this.postService.fetchLikeList(data)
+            console.log(result, '-----------------------return in like fetch controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
     async deletePost(data:any){
         try {
             console.log(data,'-------------------------hello')
