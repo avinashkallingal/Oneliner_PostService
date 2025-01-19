@@ -400,11 +400,34 @@ async getPostDataForAdmin(data: any) {
   try {
       console.log(data, '---------data in the post service ')
       const report = await this.postRepo.getPostDataForAdmin(data);
-      const postData=report.data
+      // const postData=report.data
       if (!report) {
           return { success: false, message: 'unable to comment the post' }
       }
-      return { success: true, message: 'post reported', data: postData, }
+
+      //
+      const postsWithImages = await Promise.all(
+        report.data?.map(async (post:any) => {
+          if (post.imageUrl && post.imageUrl.length > 0) {
+            const imageUrls = await Promise.all(
+              post.imageUrl.map(async (imageKey:string) => {
+                const s3Url = await fetchFileFromS3(imageKey, 604800);
+                return s3Url;
+              })
+            );
+            const plainPost = (post as Document).toObject();
+            return {
+              ...plainPost,
+              imageUrlS3: imageUrls,
+            };
+          }
+          return post;
+        })
+      );
+      //
+
+
+      return { success: true, message: 'post reported', data: postsWithImages, }
   } catch (error) {
       console.log('Error in likePost in applicaiton user service', error);
       return { success: false, message: 'Someting went wrong' }
