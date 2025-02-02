@@ -124,18 +124,21 @@ export class PostRepository implements IPostRepository {
   async findAllPost(
     data: any
   ): Promise<{ success: boolean; message: string; data?: IPost[] }> {
+
     try {
       // const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page*5);
-      console.log(data.genre, "  pages is post service repo");
+      console.log(data.genre,data.page, "  pages is post service repo?????????????");
       let posts:any={}
+      let limit=2
+      let skip=(data.page-1)*limit
      if(data.genre=="All"){
         posts = await Post.find({ isDelete: false }).sort({
           created_at: -1,
-        });
+        })
     }else{
         posts = await Post.find({ genre:data.genre,isDelete: false}).sort({
             created_at: -1,
-          });
+          })
 
     }
 

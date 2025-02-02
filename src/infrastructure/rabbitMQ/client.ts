@@ -32,7 +32,7 @@ class RabbitMQClient {
                 this.connection.createChannel(),
             ]);
 
-            await this.producerChannel.assertQueue(rabbitmqConfig.rabbitMQ.queues.postQueue, { durable: true });
+            // await this.producerChannel.assertQueue(rabbitmqConfig.rabbitMQ.queues.postQueue, { durable: true });
             await this.consumerChannel.assertQueue(rabbitmqConfig.rabbitMQ.queues.postQueue, { durable: true });
 
             this.producer = new Producer(this.producerChannel);
