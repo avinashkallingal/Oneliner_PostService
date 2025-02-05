@@ -18,7 +18,7 @@ class PostService {
     post: IAddPostData
   ): Promise<{ success: boolean; message: string; data?: IPost }> {
     try {
-      console.log("data recived in the use-case post applciaotn");
+      console.log(post,"data recived in the use-case post applciaotn add post 222222222222");
       let imageUrls: string[] = [];
       let pdfUrl: string[] = [];
       let originalNames: string[] = [];
@@ -62,8 +62,10 @@ class PostService {
         pdfUrl: pdfUrl[0],
         originalName: originalNames,
         genre: post.genre,
+        tags:post.tags
       };
       console.log("3");
+      console.log(newPost," new post for saving in add post function5555555555555")
 
       console.log(imageUrls, "this is image url path");
       const result = await this.postRepo.save(newPost);
@@ -194,6 +196,39 @@ class PostService {
     user: any
   ): Promise<{ success: boolean; message: string; data?: any }> {
     const result = await this.postRepo.findUserPost(user);
+    if (!result.success || !result.data) {
+      return { success: false, message: "No data found" };
+    }
+    const postsWithImages = await Promise.all(
+      result.data?.map(async (post:any) => {
+        if (post.imageUrl && post.imageUrl.length > 0) {
+          const imageUrls = await Promise.all(
+            post.imageUrl.map(async (imageKey:any) => {
+              const s3Url = await fetchFileFromS3(imageKey, 604800);
+              return s3Url;
+            })
+          );
+          const plainPost = (post as Document).toObject();
+          return {
+            ...plainPost,
+            imageUrlS3: imageUrls,
+          };
+        }
+        return post;
+      })
+    );
+    return {
+      success: true,
+      message: "Images and user datas sent",
+      data: postsWithImages,
+    };
+  }
+
+
+  async getTagPosts(
+    tag: string
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    const result = await this.postRepo.findTagPost(tag);
     if (!result.success || !result.data) {
       return { success: false, message: "No data found" };
     }
@@ -354,11 +389,11 @@ class PostService {
     try {
 
         console.log(data, '---------data in the post service ')
-        const comment = await this.postRepo.addComment(data);
+        const comment:any = await this.postRepo.addComment(data);
         if (!comment) {
             return { success: false, message: 'unable to comment the post' }
         }
-        return { success: true, message: 'commented the post' }
+        return { success: true, message: 'commented the post',data:comment.commentId }
     } catch (error) {
         console.log('Error in likePost in applicaiton user service', error);
         return { success: false, message: 'Someting went wrong' }

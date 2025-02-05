@@ -56,6 +56,17 @@ class PostController {
         }
     }
 
+    async fetchTagPosts(tag:string) {
+        try {
+            console.log(tag,'-------------------------tag in fetchtag post function')
+            const result = await this.postService.getTagPosts(tag)
+            console.log(result, '-----------------------return in post controller');
+            return result;
+        } catch (error) {
+
+        }
+    }
+
     
     async getPost(post:any) {
         try {

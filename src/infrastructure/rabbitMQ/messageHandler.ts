@@ -25,6 +25,10 @@ export default class MessageHandler {
         console.log("Post Service - operation", operation);
         response = await postController.fetchedUserPosts(data);
         break;
+      case "get-tag-posts":
+        console.log("Post Service - operation", operation);
+        response = await postController.fetchTagPosts(data);
+        break;
       case "get-post":
         console.log("Post Service - operation", operation);
         response = await postController.getPost(data);

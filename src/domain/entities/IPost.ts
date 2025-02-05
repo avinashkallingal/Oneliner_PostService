@@ -56,5 +56,6 @@ export interface ISavePostData {
     pdfUrl?:string;
     originalname?: string[];
     genre?:string;
+    tags?:string[];
 
 }

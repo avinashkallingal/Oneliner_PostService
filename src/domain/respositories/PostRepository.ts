@@ -20,6 +20,7 @@ export class PostRepository implements IPostRepository {
         title: post.title,
         imageUrl: post.imageUrl,
         pdfUrl: post.pdfUrl,
+        tags:post.tags,
         // originalname: post.originalname,
       });
       console.log("0000abc");
@@ -124,29 +125,36 @@ export class PostRepository implements IPostRepository {
   async findAllPost(
     data: any
   ): Promise<{ success: boolean; message: string; data?: IPost[] }> {
-
     try {
       // const posts = await Post.find({ isDelete: false }).sort({ created_at: -1 }).limit(page*5);
-      console.log(data.genre,data.page, "  pages is post service repo?????????????");
-      let posts:any={}
-      let limit=2
-      let skip=(data.page-1)*limit
-     if(data.genre=="All"){
-        posts = await Post.find({ isDelete: false }).sort({
-          created_at: -1,
-        })
-    }else{
-        posts = await Post.find({ genre:data.genre,isDelete: false}).sort({
+      console.log(
+        data.genre,
+        data.page,
+        "  pages is post service repo?????????????"
+      );
+      let posts: any = {};
+      let limit = 2;
+      let skip = (data.page - 1) * limit;
+      if (data.genre == "All") {
+        posts = await Post.find({ isDelete: false })
+          .sort({
             created_at: -1,
           })
+          .skip(skip)
+          .limit(limit);
+      } else {
+        posts = await Post.find({ genre: data.genre, isDelete: false })
+          .sort({
+            created_at: -1,
+          })
+          .skip(skip)
+          .limit(limit);
+      }
 
-    }
-
-        if (!posts) {
-          return { success: false, message: "no posts found" };
-        }
-        return { success: true, message: "post found", data: posts };
-      
+      if (!posts) {
+        return { success: false, message: "no posts found" };
+      }
+      return { success: true, message: "post found", data: posts };
     } catch (error) {
       const err = error as Error;
       console.log("Error fetching all post", err);
@@ -175,7 +183,30 @@ export class PostRepository implements IPostRepository {
     }
   }
 
+  async findTagPost(
+    tag: string
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    try {
+      console.log(tag, "Searching for posts with this tag");
   
+      const posts: any = await Post.find({
+        tags: { $in: [tag] }, // Find posts where the tag exists in the tags array
+      }).sort({ created_at: -1 });
+  
+      console.log(posts, "----post data");
+      if (!posts || posts.length === 0) {
+        return { success: false, message: "No posts found with this tag" };
+      }
+  
+      return { success: true, message: "Posts found", data: posts };
+    } catch (error) {
+      const err = error as Error;
+      console.log("Error fetching posts with tag", err);
+      throw new Error(`Error fetching posts with tag: ${err.message}`);
+    }
+  }
+  
+
   async getPost(
     post: any
   ): Promise<{ success: boolean; message: string; data?: any }> {
@@ -256,7 +287,6 @@ export class PostRepository implements IPostRepository {
     }
   }
 
-
   async fetchLikeList(data: any) {
     try {
       // Convert postId to ObjectId if necessary
@@ -264,12 +294,11 @@ export class PostRepository implements IPostRepository {
       console.log(data, " data in post repo");
       const post = await Post.findById(data);
       console.log(post, " post details in like function");
-     if(post){
-      return { success: true, message: "like list found", like_data:post };
-     }else{
-      return { success: false, message: "no data found", like: false };
-     }
-      
+      if (post) {
+        return { success: true, message: "like list found", like_data: post };
+      } else {
+        return { success: false, message: "no data found", like: false };
+      }
     } catch (error) {
       const err = error as Error;
       console.log("Error liking post", err);
@@ -290,26 +319,20 @@ export class PostRepository implements IPostRepository {
   }
 
   async reportPost(post: any) {
-    try {   
-      
-     
+    try {
       const posts = await Post.findByIdAndUpdate(
         post.data.postId, // Directly pass the post ID here
-        { 
-          $push: { 
-            reportPost: { 
-              UserId: post.data.reportUserId, 
-              reason: post.data.reason 
-            } 
-          } 
+        {
+          $push: {
+            reportPost: {
+              UserId: post.data.reportUserId,
+              reason: post.data.reason,
+            },
+          },
         },
         { new: true } // To return the updated document
-      );   
-      
-        
- 
-      
- 
+      );
+
       return { success: true, message: "report done" };
     } catch (error) {
       const err = error as Error;
@@ -318,22 +341,17 @@ export class PostRepository implements IPostRepository {
     }
   }
 
-  
   async adminRemovePost(post: any) {
-    try {   
-      
-     
+    try {
       const posts = await Post.findByIdAndUpdate(
-        {_id:post.data}, // Directly pass the post ID here
-        { 
-          $set: { isDelete: true } // Set the isDeleted field to true
+        { _id: post.data }, // Directly pass the post ID here
+        {
+          $set: { isDelete: true }, // Set the isDeleted field to true
         }
-       
-      );      
-        
-      console.log(posts," posts removed admin 988798796879687698768769")
-      
- 
+      );
+
+      console.log(posts, " posts removed admin 988798796879687698768769");
+
       return { success: true, message: "remove done" };
     } catch (error) {
       const err = error as Error;
@@ -342,16 +360,16 @@ export class PostRepository implements IPostRepository {
     }
   }
 
-  async addComment(data:any) {
+  async addComment(data: any) {
     try {
-      console.log(data,"111111111")
+      console.log(data, "111111111");
       // Basic validation
       if (!data.data.postId || !data.data.userId) {
         return false;
       }
 
       if (data.data.parentCommentId) {
-        console.log("222222222")
+        console.log("222222222");
         // Handle replying to an existing comment
         const post = await Post.updateOne(
           { _id: data.data.postId, "comments._id": data.data.parentCommentId },
@@ -370,8 +388,8 @@ export class PostRepository implements IPostRepository {
         console.log(post);
         return post;
       } else {
-        console.log("33333333")
-        console.log(data.data.postId," post id")
+        console.log("33333333");
+        console.log(data.data.postId, " post id");
         // Handle adding a new comment
         const post = await Post.updateOne(
           { _id: data.data.postId },
@@ -386,8 +404,21 @@ export class PostRepository implements IPostRepository {
             },
           }
         );
-        console.log(post," updated result");
-        return post;
+
+        const updatedPost: any = await Post.findById(data.data.postId);
+        const newComment = updatedPost.comments.find(
+          (comment: any) =>
+            comment.UserId === data.data.userId &&
+            comment.content === data.data.content
+        );
+
+        console.log(updatedPost, " updated post with comment");
+        return {
+          post: post,
+          commentId: newComment._id, // Return the comment's ID
+        };
+        // console.log(post, " updated result");
+        // return post;
       }
     } catch (error) {
       console.log("error in comment method", error);
@@ -399,9 +430,9 @@ export class PostRepository implements IPostRepository {
     user: any
   ): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-
-
-      const posts: any = await Post.find({ reportPost: { $ne: [] } }).sort({ created_at: -1 });
+      const posts: any = await Post.find({ reportPost: { $ne: [] } }).sort({
+        created_at: -1,
+      });
       console.log(posts, "----post data in admin get post+%%%%%%%%%%%%%%%%%%%");
       if (!posts || posts.length === 0) {
         return { success: false, message: "No posts found" };
@@ -413,5 +444,4 @@ export class PostRepository implements IPostRepository {
       throw new Error(`Error fetching users post: ${err.message}`);
     }
   }
-
 }
